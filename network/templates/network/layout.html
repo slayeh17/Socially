@@ -1,0 +1,31 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{% block title %}Social Network{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 w-2/3 mx-auto my-8">
+    <div class="flex items-start gap-x-11">
+      <nav class="w-1/4 bg-white px-1 py-2 shadow-md flex flex-col rounded-xl items-center">
+        <h1 class="text-4xl font-bold mb-4">CS50 Network</h1>
+        <div class="flex flex-col ">
+            <a href="{% url 'index' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">All Posts</a>
+            {% if user.is_authenticated %}
+                <a class="text-2xl py-2 px-1 text-blue-500 hover:underline" href="{% url 'profile' request.user %}"><strong>{{ user.username }}</strong></a>
+                <a href="{% url 'following' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">Following</a>
+                <a href="{% url 'logout' %}" class="text-2xl py-2 px-1 text-red-500 hover:underline">Log Out</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">Log In</a>
+                <a href="{% url 'register' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">Register</a>
+            {% endif %}
+        </div>
+      </nav>
+      <div class="w-3/4 bg-gray-200 p-6 shadow-md rounded-xl">
+        {% block body %} 
+        {% endblock %}
+      </div>
+    </div>
+  </body>
+</html>

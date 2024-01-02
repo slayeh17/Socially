@@ -1,0 +1,135 @@
+{% extends "network/index.html" %}
+
+{% load static %}
+
+{% block body %}
+    <p class="text-2xl font-medium border-2">Following</p>
+    {% for post in posts %}
+        <div class="bg-white p-4 rounded-md shadow-md mb-2">
+            <div class="flex items-start mb-2">
+                <div>
+                    <h2 class="text-lg font-semibold">{{ post.user }}</h2>
+                    <p class="text-gray-500">@{{ post.user }} • {{ post.date }}</p>
+                </div>
+            </div>
+            <p class="text-gray-800">{{ post.post }}</p>
+            <div class="mt-2">
+                <button class="like-button flex gap-x-2" data-post-id="{{ post.id }}" data-likes-count="{{ post.likes_count }}" {% if user in post.likes.all %}data-liked="true"{% endif %}>
+                    <img src="{% static 'network/heart.svg' %}" class="heart-img">
+                    <p>{{ post.likes_count }}</p>
+                </button>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="flex justify-end gap-x-2">
+        {% if posts.has_previous %}
+            <a href="?page={{ posts.previous_page_number }}" class="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue text-white">Previous</a>
+        {% else %}
+            <a href="#" class="px-4 py-2 rounded-md bg-gray-500 hover:bg-gray-600 focus:outline-none focus:shadow-outline-gray text-white">Previous</a>
+        {% endif %}
+        {% if posts.has_next %}
+            <a href="?page={{ posts.next_page_number }}" class="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue text-white">Next</a>
+        {% else %}
+            <a href="#" class="px-4 py-2 rounded-md bg-gray-500 hover:bg-gray-600 focus:outline-none focus:shadow-outline-gray text-white">Next</a>
+        {% endif %}
+    </div>
+
+    <script>
+        const editButtons = document.querySelectorAll(".edit-button");
+
+editButtons.forEach((editButton) => {
+  editButton.addEventListener("click", function () {
+    const postID = this.dataset.postId;
+    const postContainer = this.closest(".bg-white").querySelector(".edit-post");
+    const postContent = postContainer.innerHTML;
+
+    postContainer.innerHTML = `
+                    <form id="edit-form" data-post-id="${postID}">
+                        {% csrf_token %}
+                        <textarea name="edited_post" id="edited_post" cols="60" class="border-2 border-blue-400 rounded-md">${postContent}</textarea>
+                        <input type="hidden" value="${postID}" name="post_id" id="post_id">
+                        <div class="flex gap-x-2 mt-2">
+                            <input type="submit" value="Save" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:shadow-outline-green">
+                            <button type="button" id="cancel-button" class="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 focus:outline-none focus:shadow-outline-red text-white">Cancel</button>
+                        </div>
+                    </form>
+                `;
+    console.log(postID);
+
+    document.getElementById("cancel-button").addEventListener("click", () => {
+      postContainer.innerHTML = `${postContent}`;
+    });
+
+    document.getElementById("edit-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      post_id = document.getElementById("post_id");
+      console.log(post_id.value);
+      edited_post = document.getElementById("edited_post");
+      console.log(edited_post.value);
+
+      const formData = new FormData();
+      formData.append("post_id", post_id.value);
+      formData.append("edited_post", edited_post.value);
+      formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+      console.log(formData);
+      fetch('{% url "edit_post" %}', {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Success:", data.post);
+          postContainer.innerHTML = edited_post.value;
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    });
+  });
+});
+
+document.querySelectorAll(".like-button").forEach((button) => {
+  button.addEventListener("click", function () {
+    const postId = this.getAttribute("data-post-id");
+    const liked = this.getAttribute("data-liked") === "true";
+    const likesCount = parseInt(this.getAttribute("data-likes-count"));
+
+    fetch(`{% url 'like_post' 0 %}${postId}`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const likeButton = document.querySelector(
+          `.like-button[data-post-id="${postId}"]`
+        );
+        likeButton.setAttribute("data-liked", data.liked);
+        const heartImg = likeButton.querySelector(".heart-img");
+        heartImg.src = data.liked
+          ? '{% static "network/heart_liked.svg" %}'
+          : '{% static "network/heart.svg" %}';
+        likeButton.querySelector("p").textContent = data.likes_count;
+      })
+      .catch((error) => console.error("Error:", error));
+  });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".like-button").forEach((button) => {
+    const liked = button.getAttribute("data-liked") === "true";
+    const heartImg = button.querySelector(".heart-img");
+    heartImg.src = liked
+      ? '{% static "network/heart_liked.svg" %}'
+      : '{% static "network/heart.svg" %}';
+  });
+});
+
+    </script>
+
+{% endblock %}
