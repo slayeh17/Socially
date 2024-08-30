@@ -6,26 +6,46 @@
     <title>{% block title %}Socially{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 w-2/3 mx-auto my-8">
-    <div class="flex items-start gap-x-11">
-      <nav class="w-1/4 bg-white px-1 py-2 shadow-md flex flex-col rounded-xl items-center">
-        <h1 class="text-4xl font-bold mb-4">Socially</h1>
-        <div class="flex flex-col ">
-            <a href="{% url 'index' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">All Posts</a>
+  <body class="bg-gray-100 max-w-7xl mx-auto my-8 px-4">
+    <div class="flex flex-col lg:flex-row lg:items-start gap-x-8">
+      <nav class="bg-white px-8 py-4 shadow-md flex flex-col rounded-xl lg:fixed lg:left-20 lg:w-48 w-full mb-6 lg:mb-0">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold">Socially</h1>
+          <button id="hamburger-btn" class="lg:hidden focus:outline-none">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="nav-links" class="flex flex-col mt-4 space-y-2 hidden lg:flex">
+            <a href="{% url 'index' %}" class="text-xl py-2 w-full text-center lg:text-left text-purple-500 hover:underline">All Posts</a>
             {% if user.is_authenticated %}
-                <a class="text-2xl py-2 px-1 text-blue-500 hover:underline" href="{% url 'profile' request.user %}"><strong>{{ user.username }}</strong></a>
-                <a href="{% url 'following' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">Following</a>
-                <a href="{% url 'logout' %}" class="text-2xl py-2 px-1 text-red-500 hover:underline">Log Out</a>
+                <a class="text-xl py-2 w-full text-center lg:text-left text-blue-500 hover:underline" href="{% url 'profile' request.user %}"><strong>{{ user.username }}</strong></a>
+                <a href="{% url 'following' %}" class="text-xl py-2 w-full text-center lg:text-left text-purple-500 hover:underline">Following</a>
+                <a href="{% url 'likes' %}" class="text-xl py-2 w-full text-center lg:text-left text-purple-500 hover:underline">Likes</a>
+                <a href="{% url 'logout' %}" class="text-xl py-2 w-full text-center lg:text-left text-red-500 hover:underline">Log Out</a>
             {% else %}
-                <a href="{% url 'login' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">Log In</a>
-                <a href="{% url 'register' %}" class="text-2xl py-2 px-1 text-purple-500 hover:underline">Register</a>
+                <a href="{% url 'login' %}" class="text-xl py-2 w-full text-center lg:text-left text-purple-500 hover:underline">Log In</a>
+                <a href="{% url 'register' %}" class="text-xl py-2 w-full text-center lg:text-left text-purple-500 hover:underline">Register</a>
             {% endif %}
         </div>
       </nav>
-      <div class="w-3/4 bg-gray-200 p-6 shadow-md rounded-xl">
+      
+      <div class="bg-gray-200 p-6 shadow-md rounded-xl lg:m-auto lg:w-3/4">
         {% block body %} 
         {% endblock %}
       </div>
     </div>
+
+    <script>
+      document.getElementById('hamburger-btn').addEventListener('click', function() {
+          var navLinks = document.getElementById('nav-links');
+          if (navLinks.classList.contains('hidden')) {
+              navLinks.classList.remove('hidden');
+          } else {
+              navLinks.classList.add('hidden');
+          }
+      });
+    </script>
   </body>
 </html>

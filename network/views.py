@@ -165,3 +165,17 @@ def like_post(request, pk):
         }
 
         return JsonResponse(response_data)
+    
+def likes(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    liked_posts = Posts.objects.filter(likes=request.user).order_by('-date')
+
+    current_page = request.GET.get('page')
+    p = Paginator(liked_posts, 10)
+    current_page_posts = p.get_page(current_page)
+
+    return render(request, "network/likes.html", {
+        "posts": current_page_posts,
+    })
